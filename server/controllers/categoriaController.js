@@ -2,26 +2,19 @@ const Categoria = require('../models/Categoria');
 const mongoose = require('mongoose');
 
 exports.homepage = async(req, res) => {
-
     const message = await req.flash("info");
-
     const locals = {
-        title:'Nodejs',
-        description:'jahdhjasd'
+        title:'CRUD',
+        description:'Categorias'
     }
-
     let perPage = 10;
     let page = req.query.page || 1;
-
     try {
     const categorias = await Categoria.aggregate([{ $sort: { createdAt: -1 } }])
         .skip(perPage * page - perPage)
         .limit(perPage)
         .exec();
-    // Count is deprecated. Use countDocuments({}) or estimatedDocumentCount()
-    // const count = await Customer.count();
     const count = await Categoria.countDocuments({});
-
     res.render("index", {
         locals,
         categorias,
@@ -31,20 +24,11 @@ exports.homepage = async(req, res) => {
     });
     } catch (error) {
     console.log(error);
-    }
-//
-//    try {
-//        const categorias = await Categoria.find({}).limit(22);
-//        res.render('index', { locals, message, categorias } );
-//    } catch (error) {
-//        console.log(error);
-//    }
-//    
+    } 
     
 };
 
-
-//new category
+//nueva categoria
 exports.addcategory = async(req, res) => {
     const locals = {
         title:'Nueva categoría',
@@ -53,27 +37,19 @@ exports.addcategory = async(req, res) => {
     res.render('categorias/add',locals);
 };
 
-
-
 exports.postcategory = async(req, res) => {
-
     console.log(req.body);  
-    
     const newCategoria = new Categoria({
         nombre: req.body.nombre,
         descripcion: req.body.descripcion
     });
-
     try {
-        
         await Categoria.create(newCategoria);
         await req.flash("info", "Se ha agregado una nueva categoría");
         res.redirect('/');
-
     } catch (error) {
         console.log(error);
     }
-    
 }
 
 exports.view = async(req, res) => {
@@ -98,12 +74,10 @@ exports.view = async(req, res) => {
 exports.edit = async(req, res) => {
     try {
     const categoria = await Categoria.findOne({ _id: req.params.id });
-
     const locals = {
         title: "Editar información de Categoria",
-        description: "sdfadfdsf",
+        description: "editando",
     };
-
     res.render("categorias/edit", {
         locals,
         categoria,
@@ -120,7 +94,6 @@ exports.editCate = async (req, res) => {
         descripcion: req.body.descripcion,
     });
     await res.redirect(`/edit/${req.params.id}`);
-
     console.log("redirigiendo");
     } catch (error) {
     console.log(error);
@@ -136,23 +109,19 @@ exports.deleteCate = async (req, res) => {
     }
 };
 
-
 exports.searchcate = async (req, res) => {
     const locals = {
     title: "Buscando Categoría",
-    description: "Free NodeJs User Management System",
+    description: "Buscar Categoría",
     };
-
     try {
     let searchTerm = req.body.searchTerm;
     const searchNoSpecialChar = searchTerm.replace(/[^a-zA-Z0-9 ]/g, "");
-
     const categorias = await Categoria.find({
         $or: [
         { nombre: { $regex: new RegExp(searchNoSpecialChar, "i") } },
         ]
     });
-
     res.render("searchcate", {
         categorias,
         locals

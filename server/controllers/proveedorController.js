@@ -1,14 +1,34 @@
 const Proveedor = require('../models/Proveedor');
+const mongoose = require('mongoose');
 
 exports.homepage = async (req, res) => {
+    const message = await req.flash("info");
     const locals = {
-        title: 'Nodejs',
-        description: 'Descripción de la página de inicio'
-    };
-    res.render('index', locals);
+        title:'Nodejs',
+        description:'jahdhjasd'
+    }
+    let perPage = 10;
+    let page = req.query.page || 1;
+
+    try {
+    const proveedores = await Proveedor.aggregate([{ $sort: { createdAt: -1 } }])
+        .skip(perPage * page - perPage)
+        .limit(perPage)
+        .exec();
+    const count = await Proveedor.countDocuments({});
+    res.render("indexpro", {
+        locals,
+        proveedores,
+        current: page,
+        pages: Math.ceil(count / perPage),
+        message,
+    });
+    } catch (error) {
+    console.log(error);
+    } 
 };
 
-exports.addProveedor = async (req, res) => {
+exports.addproveedor = async (req, res) => {
     const locals = {
         title: 'Nuevo Proveedor',
         description: 'Añadir nuevo proveedor'
@@ -16,7 +36,7 @@ exports.addProveedor = async (req, res) => {
     res.render('proveedores/add', locals);
 };
 
-exports.postProveedor = async (req, res) => {
+exports.postproveedor = async (req, res) => {
     console.log(req.body);
 
     const newProveedor = new Proveedor({
